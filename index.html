@@ -1,4 +1,112 @@
 <!DOCTYPE html>
-<html>
-hola mundo
-  </html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Akari · Crew Health Monitor</title>
+<meta name="description" content="Akari: crew health monitor concept for NASA Space Apps 2026, challenge 4. Akari does not diagnose.">
+<meta name="ai-disclosure" content="The Akari logo was generated with AI. Interface code was written with AI assistance. Concept and decisions by team Akari-1.">
+<link rel="stylesheet" href="css/akari.css">
+</head><body>
+<canvas id="space" aria-hidden="true"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/></symbol>
+<symbol id="i-o2" viewBox="0 0 24 24"><circle cx="9.5" cy="11" r="5.5"/><circle cx="18" cy="17" r="2.5"/><circle cx="17.5" cy="6" r="1.2"/></symbol>
+<symbol id="i-temp" viewBox="0 0 24 24"><path d="M10 5a2 2 0 0 1 4 0v8.6a4.2 4.2 0 1 1-4 0z"/><path d="M12 9v7.5"/></symbol>
+<symbol id="i-bp" viewBox="0 0 24 24"><path d="M4 16.5a8 8 0 1 1 16 0"/><path d="M12 16.5l4-6"/><path d="M4 20h16"/></symbol>
+<symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3.5s6 6.3 6 10.7a6 6 0 0 1-12 0c0-4.4 6-10.7 6-10.7z"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.2A8 8 0 0 1 9.8 4.5a7.8 7.8 0 1 0 9.7 9.7z"/></symbol>
+<symbol id="i-mood" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14a4 4 0 0 0 7 0M9 9.5v.6M15 9.5v.6"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.6"/><path d="M12 3v2.8M12 18.2V21M3 12h2.8M18.2 12H21M5.6 5.6l2 2M16.4 16.4l2 2M5.6 18.4l2-2M16.4 7.6l2-2"/></symbol>
+<symbol id="i-air" viewBox="0 0 24 24"><path d="M3 9h10.5a2.8 2.8 0 1 0-2.8-2.8M3 14.5h15a2.8 2.8 0 1 1-2.8 2.8M3 11.8h6"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.7"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.5C10 5 7 4.6 3.5 5v13c3.5-.4 6.5 0 8.5 1.5 2-1.5 5-1.9 8.5-1.5V5C17 4.6 14 5 12 6.5z"/><path d="M12 6.5v13"/></symbol>
+<symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0zM12 16v5"/></symbol>
+<symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></symbol>
+</defs></svg>
+
+<div class="app">
+<header class="top">
+ <div class="brand"><button type="button" class="vbtn" id="vbtn" aria-pressed="false" aria-label="Switch view between normal and helmet"><svg class="i" viewBox="0 0 24 24"><path d="M5 11a7 7 0 0 1 14 0v4a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/><path d="M7.5 11.5h9v3a1.5 1.5 0 0 1-1.5 1.5H9a1.5 1.5 0 0 1-1.5-1.5z"/></svg><span>View</span><b id="vname">Normal</b></button><img class="logo" alt="Akari" src="img/logo.png" onerror="this.outerHTML='<div class=sigla>AKARI</div>'"></div>
+</header>
+
+<main class="main">
+ <section class="col c1">
+  <article class="panel hud avatar" id="avatar" aria-label="Crew member status">
+   <div class="pulse tap" id="pulse" data-ch="hr" data-st="off" role="button" tabindex="0" aria-label="Heart rate. Tap for details">
+    <span class="lab"><svg class="i beat"><use href="#i-heart"/></svg>Pulse <span class="src" data-src></span></span>
+    <span class="v"><b id="bpm">—</b><small>BPM</small></span>
+    <canvas id="ecg" role="img" aria-label="Live pulse trace"></canvas>
+    <span class="st" id="hrText"></span>
+   </div>
+   <div class="figbox" id="figbox">
+    <canvas id="fig" role="img" aria-label="Body figure. Tap the head, chest or belly to see its readings. Areas that need attention light up."></canvas>
+    <p class="say" id="say" aria-live="polite"></p>
+    <span class="lab hint">Tap a body area</span>
+    <div class="cota" aria-hidden="true"></div>
+   </div>
+   <div class="hi" id="hi" data-st="off">
+    <div class="ring"><svg viewBox="0 0 100 100" id="hiRing" aria-hidden="true"></svg><b id="hiN">—</b></div>
+    <span class="lab">Health index</span>
+   </div>
+  </article>
+
+  <article class="panel prof" id="prof" aria-label="Crew profile">
+   <label class="photo" id="photo" title="Change photo"><input type="file" accept="image/*" id="pPhoto" hidden><img id="pImg" alt="" hidden><svg class="i"><use href="#i-user"/></svg></label>
+   <input class="f name" id="pName" placeholder="Name" maxlength="40" autocomplete="off" aria-label="Name">
+   <label class="age"><input class="f" id="pAge" placeholder="Age" inputmode="numeric" maxlength="3" autocomplete="off"><span class="lab">years</span></label>
+   <label class="sex"><span class="lab">Sex</span><select class="f" id="pS" aria-label="Sex"><option value="">—</option><option value="F">Female</option><option value="M">Male</option></select></label>
+   <label class="box role"><span class="lab">Role</span><input class="f" id="pRole" maxlength="40" autocomplete="off"></label>
+   <div class="box wh"><label><span class="lab">Weight</span><span class="u"><input class="f" id="pW" inputmode="decimal" maxlength="5" autocomplete="off"><small>kg</small></span></label><label><span class="lab">Height</span><span class="u"><input class="f" id="pH" inputmode="numeric" maxlength="3" autocomplete="off"><small>cm</small></span></label></div>
+   <label class="box blood"><span class="lab">Blood type</span><select class="f" id="pB"><option value="">—</option><option>O+</option><option>O-</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option></select></label>
+  </article>
+ </section>
+
+ <section class="col c2">
+  <article class="panel hud vit3" id="vit3" aria-label="Blood pressure, temperature and radiation"></article>
+  <div class="duo" id="duo"></div>
+  <article class="panel events" aria-label="Akari notes">
+   <div class="ph"><span class="lab">Akari notes</span><span class="lab" id="evN" style="margin-left:auto"></span></div>
+   <ul class="ev" id="ev" aria-live="polite"></ul>
+  </article>
+  <div class="bottom">
+   <div class="stack">
+    <article class="panel guides" aria-label="Guides">
+     <div class="ph"><span class="ico"><svg class="i"><use href="#i-book"/></svg></span><span class="lab">Guides · what to do</span></div>
+     <div class="gl" id="gl"></div>
+    </article>
+    <article class="panel sensors" aria-label="Sensors and confidence">
+     <div class="ph"><span class="lab">Sensors</span><span class="conf">Confidence <b id="conf">—</b><span id="confN"></span></span></div>
+     <div class="wbar" id="wbar" title="Each block is one sensor, sized by its weight in the Health Index"></div>
+     <div class="chips" id="chips"></div>
+    </article>
+   </div>
+  </div>
+ </section>
+
+ <section class="col c3" id="orbs" aria-label="Blood sugar, mood and sleep"></section>
+</main>
+
+<footer class="fine"><span>Simulated data · fictional crew · not a medical device</span><span>Built with AI assistance · AI-generated logo</span></footer>
+</div>
+
+<div id="visor" aria-hidden="true"><div class="moon"></div><div class="rim"></div>
+<svg class="hud" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+ <path class="hl s" d="M25 300 V200 L60 140"/><path class="hl s" d="M25 700 V800 L60 860"/><path class="hl s" d="M975 300 V200 L940 140"/><path class="hl s" d="M975 700 V800 L940 860"/>
+ <path class="hl" d="M150 90 H330 M670 90 H850 M150 910 H330 M670 910 H850"/><path class="hl t" d="M340 75 H660 M340 925 H660"/>
+ <path class="hl t" d="M14 380 V620 M986 380 V620"/><path class="hl" d="M8 500 h14 M978 500 h14"/>
+</svg>
+<div class="rd r1" data-hud="hr">Pulse<b>—</b></div><div class="rd r2" data-hud="spo2">SpO₂<b>—</b></div>
+<div class="rd r3" data-hud="temp">Temp<b>—</b></div><div class="rd r4" data-hud="air_co2">Cabin CO₂<b>—</b></div>
+<div class="rd r5" data-hud="hi">Health index<b>—</b></div><div class="rd r6" id="hudClock">Suit link · nominal</div></div>
+<div class="panel pop" id="pop" role="dialog" aria-label="About this reading" hidden></div>
+<section class="panel dock" id="dock" role="dialog" aria-live="polite" hidden></section>
+<button type="button" class="mini" id="mini" hidden></button>
+
+
+<!-- classic scripts: the page opens by double click from file://, offline, no build step. No editing control lives here. -->
+<script src="js/TelemetryStore.js"></script>
+<script src="js/SensorAdapters.js"></script>
+<script src="js/ClinicalEngine.js"></script>
+<script src="js/profiles.js"></script>
+<script src="js/donki-event.js"></script>
+<script src="js/model.js"></script>
+<script src="js/UIController.js"></script>
+</body></html>

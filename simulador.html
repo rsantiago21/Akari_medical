@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Akari · simulador (interno)</title>
+<link rel="stylesheet" href="css/akari.css">
+<style>
+body{overflow:auto;height:auto;padding:16px;background:#000}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.hd{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-weight:300;font-size:22px;margin:0;flex:1}
+h2{font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx);margin:0;display:flex;align-items:center;gap:10px}
+h2 .n{width:22px;height:22px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font:500 11px var(--mono);color:var(--su)}
+.box{padding:16px 18px;display:grid;gap:12px;align-content:start}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px;align-items:start}
+@media(max-width:860px){.cols{grid-template-columns:1fr}}
+.note{font-size:12px;color:var(--su);margin:0;line-height:1.4}
+#appState{font:11.5px var(--mono);color:var(--su);padding:6px 10px;border:1px solid var(--line);border-radius:999px}
+#appState.ok{color:var(--nominal);border-color:color-mix(in srgb,var(--nominal) 50%,transparent)}
+/* scenarios: one click each */
+.sc{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.sc button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:4px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(255,255,255,.03);--k:var(--acc)}
+.sc button b{font-weight:500;font-size:14px;color:var(--tx);display:flex;align-items:center;gap:8px}
+.sc button b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--k);box-shadow:0 0 8px var(--k)}
+.sc button small{font-size:11.5px;color:var(--su);line-height:1.35}
+.sc button:hover,.sc button:focus-visible{background:rgba(255,255,255,.08)}
+.sc button.on{border-color:var(--k);box-shadow:inset 0 0 0 1px var(--k);background:color-mix(in srgb,var(--k) 12%,transparent)}
+.sc [data-k=ok]{--k:var(--nominal)}.sc [data-k=watch]{--k:var(--watch)}.sc [data-k=crit]{--k:var(--critical)}
+/* time */
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.b{font:12px var(--sans);color:var(--tx);background:rgba(255,255,255,.03);border:1px solid var(--line2);padding:7px 12px;border-radius:10px;cursor:pointer}
+.b:hover{background:rgba(255,255,255,.09)}.b.on{color:#000;background:#cfe3f7;border-color:#cfe3f7}
+/* vitals grouped */
+.grp{display:grid;gap:6px;padding-top:10px;border-top:1px solid var(--b1)}
+.grp:first-of-type{border-top:0;padding-top:0}
+.grp>.lab{color:var(--tx)}
+.r{display:grid;grid-template-columns:30px minmax(110px,150px) minmax(0,1fr) 78px 58px;gap:10px;align-items:center;font-size:13px}
+.r .nm small{display:block;font-size:10.5px;color:var(--te)}
+.r input[type=range]{width:100%;accent-color:#cfe3f7}.r[data-auto="1"] input[type=range]{opacity:.5}
+.r output{font:12px var(--mono);text-align:right;color:var(--tx)}
+.r .b{padding:5px 0;text-align:center}.r[data-auto="1"] .b{opacity:.45}
+.sw{appearance:none;width:28px;height:15px;border-radius:8px;background:rgba(255,255,255,.18);position:relative;cursor:pointer;margin:0}
+.sw::after{content:"";position:absolute;left:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#888;transition:.2s}
+.sw:checked{background:color-mix(in srgb,var(--nominal) 55%,transparent)}.sw:checked::after{left:15px;background:var(--nominal)}
+@media(max-width:520px){.r{grid-template-columns:30px minmax(0,1fr) 70px 52px}.r input[type=range]{grid-column:1/-1;grid-row:2}}
+/* profile */
+.f{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.f label{display:grid;gap:3px}
+input.t,select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--tx);font:14px var(--sans);padding:7px 10px;border-radius:8px}
+select option{background:#000}
+details summary{cursor:pointer;font-size:12.5px;color:var(--su)}details[open] summary{margin-bottom:10px}
+.cam video{width:100%;max-width:320px;aspect-ratio:4/3;background:#050608;object-fit:cover;border:1px solid var(--line)}
+.cam{display:grid;gap:8px}
+</style>
+</head><body>
+<div id="gate" hidden></div>
+<div class="wrap" id="sim" hidden>
+ <header class="hd"><h1>Simulador de Akari <span class="lab">interno · solo datos simulados</span></h1><span id="appState">Aún no hay una pestaña de la app abierta</span><button type="button" class="btn sm pri" id="openApp">Abrir la app</button></header>
+
+ <section class="panel box">
+  <h2><span class="n">1</span>Escenario · un clic</h2>
+  <div class="sc" id="scen"></div>
+  <p class="note">Cada escenario mueve los valores poco a poco, como pasaría en la misión. La emergencia se suma encima del escenario elegido.</p>
+ </section>
+
+ <div class="cols">
+  <div style="display:grid;gap:14px">
+   <section class="panel box">
+    <h2><span class="n">2</span>Tripulante</h2>
+    <select id="psel" aria-label="Perfil"></select>
+    <p class="note" id="pstory"></p>
+    <details><summary>Editar los datos del perfil</summary>
+     <div class="f">
+      <label><span class="lab">Nombre</span><input class="t" data-pf="name"></label><label><span class="lab">Edad</span><input class="t" data-pf="age" inputmode="numeric"></label><label><span class="lab">Puesto</span><input class="t" data-pf="role"></label>
+      <label><span class="lab">Peso (kg)</span><input class="t" data-pf="weight" inputmode="decimal"></label><label><span class="lab">Altura (cm)</span><input class="t" data-pf="height" inputmode="numeric"></label><label><span class="lab">Sangre</span><input class="t" data-pf="blood"></label>
+     </div>
+     <label style="display:grid;gap:3px;margin-top:8px"><span class="lab">Condiciones (separadas por coma)</span><input class="t" data-pf="conds"></label>
+     <label style="display:grid;gap:3px;margin-top:8px"><span class="lab">Descripción del caso</span><input class="t" data-pf="story"></label>
+     <p class="note" style="margin-top:8px">Los cambios llegan al instante a la pestaña de la app.</p>
+    </details>
+   </section>
+   <section class="panel box">
+    <h2><span class="n">3</span>Tiempo</h2>
+    <div class="row"><button type="button" class="b" id="pause">Pausar</button><span class="lab">Velocidad</span><span id="speed" class="row"></span></div>
+    <p class="note">60× = un minuto de misión por segundo.</p>
+   </section>
+   <section class="panel box">
+    <h2><span class="n">5</span>Lectura con la cámara</h2>
+    <div class="row"><select id="camCh" style="flex:1" aria-label="Sensor"></select><button type="button" class="btn sm" id="camGo">Leer con la cámara</button></div>
+    <div id="camHost" class="cam"></div>
+   </section>
+  </div>
+  <section class="panel box">
+   <h2><span class="n">4</span>Sensores y valores</h2>
+   <p class="note">Interruptor: conecta o desconecta el sensor en la app. Al mover la barra el valor queda fijo; «Auto» lo devuelve al modelo.</p>
+   <div id="rows" style="display:grid;gap:12px"></div>
+  </section>
+ </div>
+</div>
+<script src="js/profiles.js"></script>
+<script src="js/model.js"></script>
+<script src="js/OpticalScanner.js"></script>
+<script src="js/simulator.js"></script>
+</body></html>
